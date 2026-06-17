@@ -1,0 +1,39 @@
+<mat-toolbar color="primary">
+  <button mat-icon-button (click)="drawer.toggle()">
+    <mat-icon>menu</mat-icon>
+  </button>
+  <span>{{ title }}</span>
+</mat-toolbar>
+
+<mat-drawer-container>
+  <mat-drawer #drawer mode="over" opened>
+    <mat-nav-list>
+      <a mat-list-item routerLink="/" routerLinkActive="active-link" [routerLinkActiveOptions]="{exact: true}">
+        <mat-icon matListItemIcon>dashboard</mat-icon>
+        <span matListItemTitle>Dashboard</span>
+      </a>
+      <a mat-list-item routerLink="/services" routerLinkActive="active-link">
+        <mat-icon matListItemIcon>dns</mat-icon>
+        <span matListItemTitle>Services</span>
+      </a>
+      <a mat-list-item routerLink="/alerts" routerLinkActive="active-link">
+        <mat-icon matListItemIcon>notifications</mat-icon>
+        <span matListItemTitle>Alerts</span>
+      </a>
+      <a mat-list-item routerLink="/alert-rules" routerLinkActive="active-link">
+        <mat-icon matListItemIcon>rule</mat-icon>
+        <span matListItemTitle>Alert Rules</span>
+      </a>
+      <a mat-list-item routerLink="/diagnostics" routerLinkActive="active-link">
+        <mat-icon matListItemIcon>insights</mat-icon>
+        <span matListItemTitle>Diagnostics</span>
+      </a>
+    </mat-nav-list>
+  </mat-drawer>
+
+  <mat-drawer-content>
+    <div class="content">
+      <router-outlet />
+    </div>
+  </mat-drawer-content>
+</mat-drawer-container>
