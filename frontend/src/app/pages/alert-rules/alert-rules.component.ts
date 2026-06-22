@@ -22,64 +22,68 @@ import { AlertRuleFormDialogComponent } from '../../dialogs/alert-rule-form-dial
     MatSlideToggleModule, MatTooltipModule, MatProgressSpinnerModule
   ],
   template: `
-    <div class="header-row">
-      <h1>Alert Rules</h1>
-      <button mat-raised-button color="primary" (click)="addRule()">
-        <mat-icon>add</mat-icon> New Rule
-      </button>
+    <div class="page">
+      <div class="page-header">
+        <h1>Alert Rules</h1>
+        <button mat-raised-button color="primary" (click)="addRule()">
+          + New Rule
+        </button>
+      </div>
+
+      <mat-spinner *ngIf="loading" diameter="36" />
+
+      <table mat-table [dataSource]="rules" *ngIf="!loading">
+
+        <ng-container matColumnDef="serviceName">
+          <th mat-header-cell *matHeaderCellDef>Service</th>
+          <td mat-cell *matCellDef="let r">{{ r.service.id }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="ruleType">
+          <th mat-header-cell *matHeaderCellDef>Rule Type</th>
+          <td mat-cell *matCellDef="let r">{{ r.ruleType }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="threshold">
+          <th mat-header-cell *matHeaderCellDef>Threshold</th>
+          <td mat-cell *matCellDef="let r">
+            {{ r.ruleType === 'RESPONSE_TIME' ? (r.thresholdMs + ' ms') : (r.failureCount + ' failures') }}
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="enabled">
+          <th mat-header-cell *matHeaderCellDef>Enabled</th>
+          <td mat-cell *matCellDef="let r">
+            <mat-slide-toggle [checked]="r.enabled" (toggleChange)="toggleRule(r)"></mat-slide-toggle>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef></th>
+          <td mat-cell *matCellDef="let r">
+            <button mat-icon-button (click)="editRule(r)" matTooltip="Edit">
+              <mat-icon>edit</mat-icon>
+            </button>
+            <button mat-icon-button color="warn" (click)="deleteRule(r)" matTooltip="Delete">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+
+        <tr class="mat-row" *ngIf="rules.length === 0">
+          <td class="mat-cell empty" [attr.colspan]="displayedColumns.length">No alert rules. Create one to get notified.</td>
+        </tr>
+      </table>
     </div>
-
-    <mat-spinner *ngIf="loading" diameter="40" />
-
-    <table mat-table [dataSource]="rules" *ngIf="!loading">
-
-      <ng-container matColumnDef="serviceName">
-        <th mat-header-cell *matHeaderCellDef>Service</th>
-        <td mat-cell *matCellDef="let r">{{ r.service.id }}</td>
-      </ng-container>
-
-      <ng-container matColumnDef="ruleType">
-        <th mat-header-cell *matHeaderCellDef>Rule Type</th>
-        <td mat-cell *matCellDef="let r">{{ r.ruleType }}</td>
-      </ng-container>
-
-      <ng-container matColumnDef="threshold">
-        <th mat-header-cell *matHeaderCellDef>Threshold</th>
-        <td mat-cell *matCellDef="let r">
-          {{ r.ruleType === 'RESPONSE_TIME' ? (r.thresholdMs + ' ms') : (r.failureCount + ' failures') }}
-        </td>
-      </ng-container>
-
-      <ng-container matColumnDef="enabled">
-        <th mat-header-cell *matHeaderCellDef>Enabled</th>
-        <td mat-cell *matCellDef="let r">
-          <mat-slide-toggle [checked]="r.enabled" (toggleChange)="toggleRule(r)"></mat-slide-toggle>
-        </td>
-      </ng-container>
-
-      <ng-container matColumnDef="actions">
-        <th mat-header-cell *matHeaderCellDef></th>
-        <td mat-cell *matCellDef="let r">
-          <button mat-icon-button (click)="editRule(r)" matTooltip="Edit">
-            <mat-icon>edit</mat-icon>
-          </button>
-          <button mat-icon-button color="warn" (click)="deleteRule(r)" matTooltip="Delete">
-            <mat-icon>delete</mat-icon>
-          </button>
-        </td>
-      </ng-container>
-
-      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-
-      <tr class="mat-row" *ngIf="rules.length === 0">
-        <td class="mat-cell empty" [attr.colspan]="displayedColumns.length">No alert rules. Create one to get notified.</td>
-      </tr>
-    </table>
   `,
   styles: [`
-    .header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
-    .empty { text-align: center; padding: 32px; color: #888; }
+    .page { padding: 28px 32px; max-width: 1200px; margin: 0 auto; }
+    .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+    .page-header h1 { margin: 0; font-size: 22px; font-weight: 700; letter-spacing: -.4px; }
+    .empty { text-align: center; padding: 32px; color: var(--text-muted); }
     mat-spinner { margin: 40px auto; }
   `]
 })

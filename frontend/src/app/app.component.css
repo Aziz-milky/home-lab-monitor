@@ -4,6 +4,65 @@ mat-toolbar {
   left: 0;
   right: 0;
   z-index: 100;
+  height: 64px;
+  padding: 0 28px !important;
+  background: rgba(7,7,15,.82) !important;
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--border-color) !important;
+}
+
+mat-toolbar span { font-size: 19px; font-weight: 700; letter-spacing: -.4px; }
+
+.topbar-right { display: flex; align-items: center; gap: 10px; }
+
+.search-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #150f24;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  padding: 8px 12px;
+  width: 220px;
+}
+.search-input {
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--text-primary);
+  font-size: 13px;
+  font-family: inherit;
+  width: 100%;
+}
+.search-input::placeholder { color: var(--text-muted); }
+
+.refresh-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: #150f24;
+  border: 1px solid var(--border-color);
+  color: #ab9ec6;
+  cursor: pointer;
+  transition: border-color .18s, color .18s;
+}
+.refresh-btn:hover { border-color: rgba(168,85,247,.4); color: var(--text-primary); }
+
+.avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: linear-gradient(135deg,#3b1d6e,#150f24);
+  border: 1px solid rgba(168,85,247,.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  color: #c9b3ff;
 }
 
 mat-drawer-container {
@@ -12,11 +71,14 @@ mat-drawer-container {
 }
 
 mat-drawer {
-  width: 240px;
+  width: 232px;
+  padding: 22px 14px;
+  display: flex;
+  flex-direction: column;
 }
 
 mat-drawer-content {
-  padding: 24px;
+  padding: 0;
 }
 
 .content {
@@ -24,27 +86,85 @@ mat-drawer-content {
   margin: 0 auto;
 }
 
-.active-link {
-  background: rgba(66, 165, 245, 0.08) !important;
-  border-left: 3px solid var(--accent);
+.sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 4px 8px 22px;
 }
 
-.active-link .mat-icon {
-  color: var(--accent) !important;
+.brand-icon {
+  width: 32px; height: 32px;
+  border-radius: 9px;
+  background: linear-gradient(135deg,#a855f7,#6d28d9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 14px rgba(168,85,247,.35);
+  flex: none;
 }
 
-.active-link span {
-  color: var(--accent) !important;
+.brand-text { line-height: 1.1; }
+.brand-name { font-size: 14px; font-weight: 700; letter-spacing: -.2px; }
+.brand-sub { font-size: 11px; color: var(--text-muted); }
+
+mat-nav-list { display: flex; flex-direction: column; gap: 2px; }
+
+mat-nav-list a {
+  position: relative;
+  display: flex !important;
+  align-items: center;
+  gap: 11px;
+  padding: 10px 12px !important;
+  border-radius: 9px;
+  text-decoration: none;
+  color: #9486ad;
+  font-size: 13px;
+  font-weight: 500;
+  border-left: 3px solid transparent;
+  transition: background .15s, color .15s;
+  min-height: 0 !important;
+  height: auto !important;
+}
+
+mat-nav-list a .mdc-list-item__primary-text {
+  color: inherit !important;
 }
 
 mat-nav-list a:hover {
-  background: rgba(66, 165, 245, 0.04) !important;
+  background: rgba(255,255,255,.03);
+  color: var(--text-primary);
 }
 
-mat-nav-list a mat-icon {
-  color: var(--text-secondary) !important;
+mat-nav-list a.active-link {
+  background: rgba(168,85,247,.10);
+  color: var(--text-primary);
+  font-weight: 600;
+  border-left-color: var(--accent);
 }
 
-mat-nav-list a span {
-  color: var(--text-primary) !important;
+.nav-icon { flex: none; }
+
+.sidebar-status {
+  margin-top: auto;
+  padding: 13px;
+  border-radius: 11px;
+  background: rgba(52,211,153,.06);
+  border: 1px solid rgba(52,211,153,.14);
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--status-up);
+  box-shadow: 0 0 0 4px rgba(52,211,153,.16);
+  flex: none;
+}
+
+.status-text { line-height: 1.25; }
+.status-title { font-size: 12px; font-weight: 600; }
+.status-sub { font-size: 11px; color: var(--text-muted); }

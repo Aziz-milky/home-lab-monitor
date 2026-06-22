@@ -20,65 +20,69 @@ import { ServiceFormDialogComponent } from '../../dialogs/service-form-dialog';
     MatTableModule, MatButtonModule, MatIconModule, MatProgressSpinnerModule, MatTooltipModule
   ],
   template: `
-    <div class="header-row">
-      <h1>Services</h1>
-      <button mat-raised-button color="primary" (click)="openCreate()">
-        <mat-icon>add</mat-icon> New Service
-      </button>
+    <div class="page">
+      <div class="page-header">
+        <h1>Services</h1>
+        <button mat-raised-button color="primary" (click)="openCreate()">
+          + New Service
+        </button>
+      </div>
+
+      <mat-spinner *ngIf="loading" diameter="36" />
+
+      <table mat-table [dataSource]="services" *ngIf="!loading">
+
+        <ng-container matColumnDef="name">
+          <th mat-header-cell *matHeaderCellDef>Name</th>
+          <td mat-cell *matCellDef="let s">
+            <a class="sv-link" [routerLink]="['/services', s.id]">{{ s.name }}</a>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="host">
+          <th mat-header-cell *matHeaderCellDef>Host</th>
+          <td mat-cell *matCellDef="let s">{{ s.host }}:{{ s.port }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="type">
+          <th mat-header-cell *matHeaderCellDef>Type</th>
+          <td mat-cell *matCellDef="let s">{{ s.serviceType }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="active">
+          <th mat-header-cell *matHeaderCellDef>Active</th>
+          <td mat-cell *matCellDef="let s">{{ s.active ? 'Yes' : 'No' }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef></th>
+          <td mat-cell *matCellDef="let s">
+            <button mat-icon-button (click)="openEdit(s)" matTooltip="Edit">
+              <mat-icon>edit</mat-icon>
+            </button>
+            <button mat-icon-button color="warn" (click)="deleteService(s)" matTooltip="Delete">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+
+        <tr class="mat-row" *ngIf="services.length === 0">
+          <td class="mat-cell empty" [attr.colspan]="displayedColumns.length">
+            No services yet. Click "New Service" to add one.
+          </td>
+        </tr>
+      </table>
     </div>
-
-    <mat-spinner *ngIf="loading" diameter="40" />
-
-    <table mat-table [dataSource]="services" *ngIf="!loading">
-
-      <ng-container matColumnDef="name">
-        <th mat-header-cell *matHeaderCellDef>Name</th>
-        <td mat-cell *matCellDef="let s">
-          <a [routerLink]="['/services', s.id]">{{ s.name }}</a>
-        </td>
-      </ng-container>
-
-      <ng-container matColumnDef="host">
-        <th mat-header-cell *matHeaderCellDef>Host</th>
-        <td mat-cell *matCellDef="let s">{{ s.host }}:{{ s.port }}</td>
-      </ng-container>
-
-      <ng-container matColumnDef="type">
-        <th mat-header-cell *matHeaderCellDef>Type</th>
-        <td mat-cell *matCellDef="let s">{{ s.serviceType }}</td>
-      </ng-container>
-
-      <ng-container matColumnDef="active">
-        <th mat-header-cell *matHeaderCellDef>Active</th>
-        <td mat-cell *matCellDef="let s">{{ s.active ? 'Yes' : 'No' }}</td>
-      </ng-container>
-
-      <ng-container matColumnDef="actions">
-        <th mat-header-cell *matHeaderCellDef></th>
-        <td mat-cell *matCellDef="let s">
-          <button mat-icon-button (click)="openEdit(s)" matTooltip="Edit">
-            <mat-icon>edit</mat-icon>
-          </button>
-          <button mat-icon-button color="warn" (click)="deleteService(s)" matTooltip="Delete">
-            <mat-icon>delete</mat-icon>
-          </button>
-        </td>
-      </ng-container>
-
-      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-
-      <tr class="mat-row" *ngIf="services.length === 0">
-        <td class="mat-cell empty" [attr.colspan]="displayedColumns.length">
-          No services yet. Click "New Service" to add one.
-        </td>
-      </tr>
-    </table>
   `,
   styles: [`
-    .header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
-    .empty { text-align: center; padding: 32px; color: #888; }
-    table a { text-decoration: none; font-weight: 500; }
+    .page { padding: 28px 32px; max-width: 1200px; margin: 0 auto; }
+    .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+    .page-header h1 { margin: 0; font-size: 22px; font-weight: 700; letter-spacing: -.4px; }
+    .sv-link { font-weight: 500; }
+    .empty { text-align: center; padding: 32px; color: var(--text-muted); }
     mat-spinner { margin: 40px auto; }
   `]
 })

@@ -1,5 +1,5 @@
-import { Component, OnInit, OnDestroy, AfterViewInit, ViewChild, ElementRef } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { Component, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { NgFor, NgIf, DatePipe } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatTableModule } from '@angular/material/table';
@@ -26,124 +26,142 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
   selector: 'app-service-detail',
   standalone: true,
   imports: [
-    NgFor, NgIf, DatePipe,
+    NgFor, NgIf, DatePipe, RouterLink,
     MatCardModule, MatTableModule, MatButtonModule, MatIconModule, MatTooltipModule,
     MatProgressSpinnerModule, MatDialogModule,
     StatusBadgeComponent
   ],
   template: `
-    <ng-container *ngIf="loading; else content">
-      <mat-spinner diameter="40" />
-    </ng-container>
+    <div class="page">
+      <ng-container *ngIf="loading; else content">
+        <mat-spinner diameter="40" />
+      </ng-container>
 
-    <ng-template #content>
-      <h1>{{ service?.name }}</h1>
+      <ng-template #content>
+        <div class="page-header">
+          <a routerLink="/services" class="back-link">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5m7-7-7 7 7 7"/></svg>
+            Services
+          </a>
+          <h1>{{ service?.name }}</h1>
+        </div>
 
-      <mat-card class="info-card">
-        <mat-card-content class="info-grid">
-          <div><strong>Host:</strong> {{ service?.host }}:{{ service?.port }}</div>
-          <div><strong>Type:</strong> {{ service?.serviceType }}</div>
-          <div><strong>Check URL:</strong> {{ service?.checkUrl || '-' }}</div>
-          <div><strong>Active:</strong> {{ service?.active ? 'Yes' : 'No' }}</div>
-          <div><strong>Created:</strong> {{ service?.createdAt | date:'medium' }}</div>
-        </mat-card-content>
-      </mat-card>
-
-      @if (chartData.length > 0) {
-        <h2>Response Time</h2>
-        <mat-card class="chart-card">
-          <div #lineChart class="line-chart"></div>
+        <mat-card class="info-card">
+          <mat-card-content class="info-grid">
+            <div class="info-item"><span class="info-label">Host</span><span class="info-value">{{ service?.host }}:{{ service?.port }}</span></div>
+            <div class="info-item"><span class="info-label">Type</span><span class="info-value">{{ service?.serviceType }}</span></div>
+            <div class="info-item"><span class="info-label">Check URL</span><span class="info-value">{{ service?.checkUrl || '-' }}</span></div>
+            <div class="info-item"><span class="info-label">Active</span><span class="info-value">{{ service?.active ? 'Yes' : 'No' }}</span></div>
+            <div class="info-item"><span class="info-label">Created</span><span class="info-value">{{ service?.createdAt | date:'medium' }}</span></div>
+          </mat-card-content>
         </mat-card>
-      }
 
-      <h2>Health Check History</h2>
-      <table mat-table [dataSource]="healthChecks">
+        @if (chartData.length > 0) {
+          <h2 class="section-title">Response Time</h2>
+          <mat-card class="chart-card">
+            <div #lineChart class="line-chart"></div>
+          </mat-card>
+        }
 
-        <ng-container matColumnDef="status">
-          <th mat-header-cell *matHeaderCellDef>Status</th>
-          <td mat-cell *matCellDef="let h">
-            <app-status-badge [status]="h.status" />
-          </td>
-        </ng-container>
+        <h2 class="section-title">Health Check History</h2>
+        <table mat-table [dataSource]="healthChecks">
 
-        <ng-container matColumnDef="responseTime">
-          <th mat-header-cell *matHeaderCellDef>Response Time</th>
-          <td mat-cell *matCellDef="let h">{{ h.responseTimeMs }} ms</td>
-        </ng-container>
+          <ng-container matColumnDef="status">
+            <th mat-header-cell *matHeaderCellDef>Status</th>
+            <td mat-cell *matCellDef="let h">
+              <app-status-badge [status]="h.status" />
+            </td>
+          </ng-container>
 
-        <ng-container matColumnDef="httpStatus">
-          <th mat-header-cell *matHeaderCellDef>HTTP Status</th>
-          <td mat-cell *matCellDef="let h">{{ h.httpStatus }}</td>
-        </ng-container>
+          <ng-container matColumnDef="responseTime">
+            <th mat-header-cell *matHeaderCellDef>Response Time</th>
+            <td mat-cell *matCellDef="let h">{{ h.responseTimeMs }} ms</td>
+          </ng-container>
 
-        <ng-container matColumnDef="error">
-          <th mat-header-cell *matHeaderCellDef>Error</th>
-          <td mat-cell *matCellDef="let h">{{ h.errorMessage || '-' }}</td>
-        </ng-container>
+          <ng-container matColumnDef="httpStatus">
+            <th mat-header-cell *matHeaderCellDef>HTTP Status</th>
+            <td mat-cell *matCellDef="let h">{{ h.httpStatus }}</td>
+          </ng-container>
 
-        <ng-container matColumnDef="checkedAt">
-          <th mat-header-cell *matHeaderCellDef>Checked At</th>
-          <td mat-cell *matCellDef="let h">{{ h.checkedAt | date:'medium' }}</td>
-        </ng-container>
+          <ng-container matColumnDef="error">
+            <th mat-header-cell *matHeaderCellDef>Error</th>
+            <td mat-cell *matCellDef="let h">{{ h.errorMessage || '-' }}</td>
+          </ng-container>
 
-        <tr mat-header-row *matHeaderRowDef="healthColumns"></tr>
-        <tr mat-row *matRowDef="let row; columns: healthColumns;"></tr>
+          <ng-container matColumnDef="checkedAt">
+            <th mat-header-cell *matHeaderCellDef>Checked At</th>
+            <td mat-cell *matCellDef="let h">{{ h.checkedAt | date:'medium' }}</td>
+          </ng-container>
 
-        <tr class="mat-row" *ngIf="healthChecks.length === 0">
-          <td class="mat-cell empty" [attr.colspan]="healthColumns.length">No health checks yet.</td>
-        </tr>
-      </table>
+          <tr mat-header-row *matHeaderRowDef="healthColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: healthColumns;"></tr>
 
-      <h2>Alert Rules</h2>
-      <button mat-raised-button color="primary" (click)="addRule()" class="add-rule-btn">Add Rule</button>
+          <tr class="mat-row" *ngIf="healthChecks.length === 0">
+            <td class="mat-cell empty" [attr.colspan]="healthColumns.length">No health checks yet.</td>
+          </tr>
+        </table>
 
-      <table mat-table [dataSource]="rules">
+        <div class="section-header">
+          <h2 class="section-title" style="margin:0">Alert Rules</h2>
+          <button mat-raised-button color="primary" (click)="addRule()">+ Add Rule</button>
+        </div>
 
-        <ng-container matColumnDef="type">
-          <th mat-header-cell *matHeaderCellDef>Rule Type</th>
-          <td mat-cell *matCellDef="let r">{{ r.ruleType }}</td>
-        </ng-container>
+        <table mat-table [dataSource]="rules">
 
-        <ng-container matColumnDef="threshold">
-          <th mat-header-cell *matHeaderCellDef>Threshold</th>
-          <td mat-cell *matCellDef="let r">{{ r.ruleType === 'RESPONSE_TIME' ? (r.thresholdMs + ' ms') : (r.failureCount + ' failures') }}</td>
-        </ng-container>
+          <ng-container matColumnDef="type">
+            <th mat-header-cell *matHeaderCellDef>Rule Type</th>
+            <td mat-cell *matCellDef="let r">{{ r.ruleType }}</td>
+          </ng-container>
 
-        <ng-container matColumnDef="enabled">
-          <th mat-header-cell *matHeaderCellDef>Enabled</th>
-          <td mat-cell *matCellDef="let r">{{ r.enabled ? 'Yes' : 'No' }}</td>
-        </ng-container>
+          <ng-container matColumnDef="threshold">
+            <th mat-header-cell *matHeaderCellDef>Threshold</th>
+            <td mat-cell *matCellDef="let r">{{ r.ruleType === 'RESPONSE_TIME' ? (r.thresholdMs + ' ms') : (r.failureCount + ' failures') }}</td>
+          </ng-container>
 
-        <ng-container matColumnDef="actions">
-          <th mat-header-cell *matHeaderCellDef></th>
-          <td mat-cell *matCellDef="let r">
-            <button mat-icon-button (click)="deleteRule(r)" matTooltip="Delete">
-              <mat-icon>delete</mat-icon>
-            </button>
-          </td>
-        </ng-container>
+          <ng-container matColumnDef="enabled">
+            <th mat-header-cell *matHeaderCellDef>Enabled</th>
+            <td mat-cell *matCellDef="let r">{{ r.enabled ? 'Yes' : 'No' }}</td>
+          </ng-container>
 
-        <tr mat-header-row *matHeaderRowDef="ruleColumns"></tr>
-        <tr mat-row *matRowDef="let row; columns: ruleColumns;"></tr>
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef></th>
+            <td mat-cell *matCellDef="let r">
+              <button mat-icon-button (click)="deleteRule(r)" matTooltip="Delete">
+                <mat-icon>delete</mat-icon>
+              </button>
+            </td>
+          </ng-container>
 
-        <tr class="mat-row" *ngIf="rules.length === 0">
-          <td class="mat-cell empty" [attr.colspan]="ruleColumns.length">No alert rules.</td>
-        </tr>
-      </table>
-    </ng-template>
+          <tr mat-header-row *matHeaderRowDef="ruleColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: ruleColumns;"></tr>
+
+          <tr class="mat-row" *ngIf="rules.length === 0">
+            <td class="mat-cell empty" [attr.colspan]="ruleColumns.length">No alert rules.</td>
+          </tr>
+        </table>
+      </ng-template>
+    </div>
   `,
   styles: [`
+    .page { padding: 28px 32px; max-width: 1200px; margin: 0 auto; }
+    .page-header { margin-bottom: 24px; }
+    .page-header h1 { margin: 8px 0 0; font-size: 22px; font-weight: 700; letter-spacing: -.4px; }
+    .back-link { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: .06em; font-weight: 600; }
+    .back-link:hover { color: var(--accent); }
     .info-card { margin-bottom: 24px; }
-    .info-grid { display: flex; flex-wrap: wrap; gap: 16px; }
-    .info-grid div { min-width: 180px; }
-    .chart-card { margin-bottom: 24px; padding: 8px !important; }
+    .info-grid { display: flex; flex-wrap: wrap; gap: 20px; padding: 4px 0; }
+    .info-item { display: flex; flex-direction: column; gap: 2px; min-width: 150px; }
+    .info-label { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--text-muted); font-weight: 600; }
+    .info-value { font-size: 14px; color: var(--text-primary); font-weight: 500; }
+    .section-title { font-size: 15px; font-weight: 600; margin: 28px 0 14px; letter-spacing: -.2px; }
+    .section-header { display: flex; justify-content: space-between; align-items: center; margin: 28px 0 14px; }
+    .chart-card { margin-bottom: 24px; padding: 16px !important; }
     .line-chart { width: 100%; height: 250px; }
-    .empty { text-align: center; padding: 24px; color: #888; }
-    .add-rule-btn { margin-bottom: 12px; }
+    .empty { text-align: center; padding: 24px; color: var(--text-muted); }
     mat-spinner { margin: 40px auto; }
   `]
 })
-export class ServiceDetailComponent implements OnInit, OnDestroy, AfterViewInit {
+export class ServiceDetailComponent implements OnInit, OnDestroy {
   @ViewChild('lineChart', { static: false }) lineChartRef!: ElementRef;
   service: Service | null = null;
   healthChecks: HealthCheck[] = [];
@@ -169,10 +187,6 @@ export class ServiceDetailComponent implements OnInit, OnDestroy, AfterViewInit 
     this.loadData();
   }
 
-  ngAfterViewInit(): void {
-    setTimeout(() => this.createLineChart());
-  }
-
   private loadData(): void {
     this.serviceApi.getById(this.serviceId).subscribe(s => this.service = s);
     this.healthApi.getHistory(this.serviceId, 0, 100).subscribe({
@@ -186,15 +200,19 @@ export class ServiceDetailComponent implements OnInit, OnDestroy, AfterViewInit 
             responseTime: h.responseTimeMs,
             status: h.status
           }));
-        setTimeout(() => this.createLineChart());
+        setTimeout(() => this.createLineChart(), 100);
       }
     });
     this.ruleApi.getAll().subscribe({
       next: (page) => {
         this.rules = page.content.filter(r => r.service.id === this.serviceId);
         this.loading = false;
+        setTimeout(() => this.createLineChart(), 200);
       },
-      error: () => this.loading = false
+      error: () => {
+        this.loading = false;
+        setTimeout(() => this.createLineChart(), 200);
+      }
     });
   }
 
@@ -210,18 +228,18 @@ export class ServiceDetailComponent implements OnInit, OnDestroy, AfterViewInit 
         xKey: 'time',
         yKey: 'responseTime',
         yName: 'Response Time (ms)',
-        stroke: '#42a5f5',
+        stroke: '#a855f7',
         marker: {
           enabled: true,
           size: 5,
-          fill: '#42a5f5',
-          stroke: '#0d0d1f',
-          strokeWidth: 1,
+          fill: '#a855f7',
+          stroke: '#0a0612',
+          strokeWidth: 2,
         },
       }],
       axes: [
-        { type: 'category', position: 'bottom' as const, title: { text: 'Time', color: '#78909c' }, label: { color: '#78909c', fontSize: 10 } },
-        { type: 'number', position: 'left' as const, title: { text: 'ms', color: '#78909c' }, label: { color: '#78909c', fontSize: 10 } },
+        { type: 'category', position: 'bottom' as const, title: { text: 'Time', color: '#6f648e' }, label: { color: '#6f648e', fontSize: 10 } },
+        { type: 'number', position: 'left' as const, title: { text: 'ms', color: '#6f648e' }, label: { color: '#6f648e', fontSize: 10 } },
       ],
       background: { fill: 'transparent' },
     };

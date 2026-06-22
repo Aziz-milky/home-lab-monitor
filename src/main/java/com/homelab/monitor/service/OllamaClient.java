@@ -5,11 +5,12 @@ import com.homelab.monitor.model.HealthCheck;
 import com.homelab.monitor.model.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.client.RestTemplate;
 
+import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @org.springframework.stereotype.Service
 public class OllamaClient {
@@ -21,7 +22,7 @@ public class OllamaClient {
     private final String model;
     private final boolean enabled;
 
-    public OllamaClient(RestTemplate restTemplate,
+    public OllamaClient(@Qualifier("ollamaRestTemplate") RestTemplate restTemplate,
                         @Value("${ollama.url:http://localhost:11434}") String baseUrl,
                         @Value("${ollama.model:llama3.2}") String model,
                         @Value("${ollama.enabled:false}") boolean enabled) {
@@ -54,28 +55,29 @@ public class OllamaClient {
     }
 
     private String buildPrompt(Service service, List<HealthCheck> checks, List<Alert> alerts) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("You are a homelab monitoring diagnostic assistant. Analyze the following service health data and provide a brief, actionable insight.\n\n");
-        sb.append("Service: ").append(service.getName()).append("\n");
-        sb.append("Type: ").append(service.getServiceType()).append("\n");
-        sb.append("URL: ").append(service.getCheckUrl()).append("\n\n");
+        var fmt = DateTimeFormatter.ofPattern("MM-dd HH:mm");
+        int checkLimit = Math.min(checks.size(), 10);
 
-        sb.append("Recent Health Checks (last ").append(Math.min(checks.size(), 30)).append("):\n");
-        checks.stream().limit(30).forEach(c ->
-                sb.append("  [").append(c.getCheckedAt()).append("] ")
-                        .append(c.getStatus())
-                        .append(" | ").append(c.getResponseTimeMs()).append("ms")
-                        .append(" | HTTP ").append(c.getHttpStatus())
-                        .append(c.getErrorMessage() != null ? " | " + c.getErrorMessage() : "")
-                        .append("\n")
-        );
+        StringBuilder sb = new StringBuilder();
+        sb.append("Service: ").append(service.getName()).append(" (").append(service.getServiceType()).append(")\n");
+        sb.append("Status: ").append(checks.isEmpty() ? "UNKNOWN" : checks.get(0).getStatus());
+        if (!checks.isEmpty()) sb.append(" | ").append(checks.get(0).getResponseTimeMs()).append("ms");
+        sb.append("\n\n");
+
+        sb.append("Recent checks (").append(checkLimit).append("):\n");
+        checks.stream().limit(10).forEach(c -> {
+            sb.append(c.getStatus().charAt(0));
+            sb.append(" ").append(c.getCheckedAt().format(fmt));
+            if (c.getResponseTimeMs() > 0) sb.append(" ").append(c.getResponseTimeMs()).append("ms");
+            sb.append("\n");
+        });
 
         if (!alerts.isEmpty()) {
-            sb.append("\nActive Alerts:\n");
-            alerts.forEach(a -> sb.append("  [").append(a.getSeverity()).append("] ").append(a.getMessage()).append("\n"));
+            sb.append("\nAlerts:\n");
+            alerts.forEach(a -> sb.append(a.getSeverity().name().charAt(0)).append(" ").append(a.getMessage()).append("\n"));
         }
 
-        sb.append("\nProvide a concise analysis (2-3 sentences) covering: current state, any patterns or concerns, and a specific recommendation.");
+        sb.append("\nDescribe this service's health in 1-2 short sentences. Mention any issues and one fix.");
         return sb.toString();
     }
 

@@ -2,10 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { NgFor, NgIf, NgClass, DatePipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
-import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatExpansionModule } from '@angular/material/expansion';
 import { Subject, takeUntil } from 'rxjs';
 import { DiagnosticApiService } from '../../services/diagnostic-api.service';
 import { DiagnosticReport } from '../../models/diagnostic.model';
@@ -15,30 +13,23 @@ import { DiagnosticReport } from '../../models/diagnostic.model';
   standalone: true,
   imports: [
     NgFor, NgIf, NgClass, DatePipe, RouterLink,
-    MatCardModule, MatIconModule, MatButtonModule, MatProgressSpinnerModule, MatExpansionModule
+    MatCardModule, MatButtonModule, MatProgressSpinnerModule
   ],
   template: `
     <div class="page">
-      <h1 class="page-title">Diagnostics</h1>
+      <div class="page-header">
+        <h1>Metrics</h1>
+      </div>
 
       @if (loading) {
         <mat-spinner diameter="36" />
       }
 
       @if (!loading) {
-        <div class="summary-grid">
-          <mat-card class="stat-card">
-            <span class="stat-value">{{ reports.length }}</span>
-            <span class="stat-label">Services</span>
-          </mat-card>
-          <mat-card class="stat-card">
-            <span class="stat-value">{{ avgScore }}</span>
-            <span class="stat-label">Avg Score</span>
-          </mat-card>
-          <mat-card class="stat-card warn-card">
-            <span class="stat-value">{{ totalIssues }}</span>
-            <span class="stat-label">Issues</span>
-          </mat-card>
+        <div class="diag-summary">
+          <div class="diag-stat"><span class="diag-stat-value">{{ reports.length }}</span><span class="diag-stat-label">Services</span></div>
+          <div class="diag-stat"><span class="diag-stat-value">{{ avgScore }}</span><span class="diag-stat-label">Avg Score</span></div>
+          <div class="diag-stat warn-stat"><span class="diag-stat-value">{{ totalIssues }}</span><span class="diag-stat-label">Issues</span></div>
         </div>
 
         <div class="reports-list">
@@ -73,29 +64,17 @@ import { DiagnosticReport } from '../../models/diagnostic.model';
                 </div>
               }
 
-              @if (r.aiAvailable && r.aiInsight) {
+              @if (r.aiInsight) {
                 <div class="ai-insight">
-                  <mat-icon>auto_awesome</mat-icon>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M13 3h-2v10h2z"/><path d="M13 17h-2v4h2z"/></svg>
                   <span>{{ r.aiInsight }}</span>
-                </div>
-              }
-              @if (r.aiAvailable && !r.aiInsight) {
-                <div class="ai-insight loading">
-                  <mat-icon>hourglass_empty</mat-icon>
-                  <span>AI analysis pending...</span>
-                </div>
-              }
-              @if (!r.aiAvailable) {
-                <div class="ai-insight disabled">
-                  <mat-icon>smartphone</mat-icon>
-                  <span>AI diagnostics not configured (set ollama.enabled=true)</span>
                 </div>
               }
             </mat-card>
           }
           @if (reports.length === 0) {
             <div class="empty-state">
-              <mat-icon>insights</mat-icon>
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" style="opacity:.3"><path d="M3 3v18h18"/><path d="M7 14l3-4 3 2 4-6"/></svg>
               <p>No services to analyze.</p>
               <button mat-raised-button color="primary" routerLink="/services">Add Service</button>
             </div>
@@ -105,45 +84,47 @@ import { DiagnosticReport } from '../../models/diagnostic.model';
     </div>
   `,
   styles: [`
-    .page { padding: 24px; max-width: 1200px; margin: 0 auto; }
-    .page-title { font-size: 1.25rem; font-weight: 500; color: var(--text-primary); margin: 0 0 20px 0; letter-spacing: 0.02em; text-transform: uppercase; opacity: 0.7; }
-    .summary-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 12px; margin-bottom: 24px; }
-    .stat-card { background: var(--surface-bg) !important; color: var(--text-primary) !important; text-align: center; padding: 14px 8px; border-left: 3px solid rgba(66,165,245,0.15) !important; }
-    .stat-value { display: block; font-size: 1.5rem; font-weight: 300; line-height: 1.2; }
-    .stat-label { display: block; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-secondary); margin-top: 2px; }
-    .warn-card { border-left-color: var(--status-warn) !important; }
+    .page { padding: 28px 32px; max-width: 1200px; margin: 0 auto; }
+    .page-header { margin-bottom: 24px; }
+    .page-header h1 { margin: 0; font-size: 22px; font-weight: 700; letter-spacing: -.4px; }
+    .diag-summary { display: flex; gap: 14px; margin-bottom: 24px; }
+    .diag-stat { background: var(--surface-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 16px 24px; min-width: 120px; }
+    .diag-stat-value { display: block; font-size: 24px; font-weight: 700; letter-spacing: -.4px; }
+    .diag-stat-label { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--text-muted); margin-top: 2px; font-weight: 600; }
+    .warn-stat .diag-stat-value { color: var(--status-warn); }
     .reports-list { display: flex; flex-direction: column; gap: 12px; }
-    .report-card { background: var(--surface-bg) !important; padding: 16px; border-left: 3px solid rgba(66,165,245,0.12) !important; }
-    .report-card.score-high { border-left-color: #4fc3f7 !important; }
-    .report-card.score-mid { border-left-color: #42a5f5 !important; }
-    .report-card.score-low { border-left-color: #5c6bc0 !important; }
-    .report-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+    .report-card { padding: 20px; border-left: 3px solid rgba(168,85,247,.12) !important; }
+    .report-card.score-high { border-left-color: #34d399 !important; }
+    .report-card.score-mid { border-left-color: #fbbf24 !important; }
+    .report-card.score-low { border-left-color: #ef4444 !important; }
+    .report-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
     .report-name-group { display: flex; align-items: center; gap: 8px; }
-    .report-name { font-size: 1rem; font-weight: 500; color: var(--accent); }
-    .report-type { font-size: 0.75rem; color: var(--text-secondary); }
+    .report-name { font-size: 15px; font-weight: 600; }
+    .report-type { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: .06em; font-weight: 600; }
     .report-score { text-align: right; }
-    .score-value { font-size: 1.5rem; font-weight: 300; }
-    .score-label { font-size: 0.75rem; color: var(--text-secondary); margin-left: 2px; }
-    .report-metrics { display: flex; gap: 20px; margin-bottom: 8px; }
-    .metric { display: flex; flex-direction: column; }
-    .metric-value { font-size: 0.9rem; font-weight: 500; }
-    .metric-label { font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; }
-    .trend-degrading { color: #5c6bc0; }
-    .trend-improving { color: #4fc3f7; }
-    .trend-stable { color: var(--text-secondary); }
+    .score-value { font-size: 22px; font-weight: 700; letter-spacing: -.3px; }
+    .score-label { font-size: 11px; color: var(--text-muted); margin-left: 2px; }
+    .report-metrics { display: flex; gap: 24px; margin-bottom: 12px; flex-wrap: wrap; }
+    .metric { display: flex; flex-direction: column; gap: 1px; }
+    .metric-value { font-size: 14px; font-weight: 600; }
+    .metric-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: .05em; font-weight: 600; }
+    .trend-degrading { color: var(--status-warn); }
+    .trend-improving { color: var(--status-up); }
+    .trend-stable { color: var(--text-muted); }
     .issues-list { display: flex; flex-direction: column; gap: 4px; margin-bottom: 8px; }
-    .issue { display: flex; gap: 8px; font-size: 0.8rem; padding: 4px 8px; border-radius: 4px; }
-    .sev-critical { background: rgba(92,107,192,0.1); }
-    .sev-warning { background: rgba(66,165,245,0.08); }
-    .sev-info { background: rgba(144,164,174,0.06); }
-    .issue-type { font-weight: 500; min-width: 70px; color: var(--text-primary); }
+    .issue { display: flex; gap: 8px; font-size: 12px; padding: 6px 10px; border-radius: 6px; }
+    .sev-critical { background: rgba(239,68,68,.08); }
+    .sev-warning { background: rgba(251,191,36,.07); }
+    .sev-info { background: rgba(168,85,247,.07); }
+    .issue-type { font-weight: 600; min-width: 70px; color: var(--text-primary); }
     .issue-desc { color: var(--text-secondary); }
-    .ai-insight { display: flex; align-items: flex-start; gap: 8px; font-size: 0.8rem; color: var(--text-secondary); padding: 8px; background: rgba(66,165,245,0.06); border-radius: 4px; }
-    .ai-insight mat-icon { font-size: 16px; width: 16px; height: 16px; margin-top: 2px; opacity: 0.6; }
-    .ai-insight.loading { opacity: 0.5; }
-    .ai-insight.disabled { background: transparent; }
-    .empty-state { text-align: center; padding: 48px 24px; color: var(--text-secondary); }
-    .empty-state mat-icon { font-size: 40px; opacity: 0.3; margin-bottom: 8px; }
+    .ai-insight { display: flex; align-items: flex-start; gap: 8px; font-size: 12px; color: var(--text-secondary); padding: 10px 12px; background: rgba(168,85,247,.06); border-radius: 8px; }
+    .ai-insight svg { flex: none; margin-top: 1px; opacity: .6; }
+    .ai-insight.loading { opacity: .5; }
+    .ai-insight.disabled { background: transparent; border: 1px dashed var(--border-color); }
+    .empty-state { text-align: center; padding: 48px 24px; color: var(--text-muted); }
+    .empty-state p { font-size: 14px; }
+    mat-spinner { margin: 40px auto; }
   `]
 })
 export class DiagnosticsComponent implements OnInit {

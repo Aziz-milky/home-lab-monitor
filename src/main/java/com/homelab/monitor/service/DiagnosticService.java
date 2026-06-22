@@ -38,20 +38,39 @@ public class DiagnosticService {
     public DiagnosticReport getReport(UUID serviceId) {
         Service service = serviceRepository.findById(serviceId)
                 .orElseThrow(() -> new RuntimeException("Service not found: " + serviceId));
-        return analyzeService(service);
+        DiagnosticReport report = analyzeService(service);
+        appendAiInsight(report, service);
+        return report;
     }
 
     public String getAiInsight(UUID serviceId) {
         Service service = serviceRepository.findById(serviceId)
                 .orElseThrow(() -> new RuntimeException("Service not found: " + serviceId));
         List<HealthCheck> recent = healthCheckRepository
-                .findByServiceIdOrderByCheckedAtDesc(service.getId(), PageRequest.of(0, 50))
+                .findByServiceIdOrderByCheckedAtDesc(service.getId(), PageRequest.of(0, 10))
                 .getContent();
         List<Alert> alerts = alertRepository.findByAcknowledgedOrderByTriggeredAtDesc(false)
                 .stream()
                 .filter(a -> a.getService().getId().equals(serviceId))
                 .collect(Collectors.toList());
         return ollamaClient.analyze(service, recent, alerts);
+    }
+
+    private void appendAiInsight(DiagnosticReport report, Service service) {
+        if (!ollamaClient.isAvailable()) return;
+        try {
+            List<HealthCheck> checks = healthCheckRepository
+                    .findByServiceIdOrderByCheckedAtDesc(service.getId(), PageRequest.of(0, 10))
+                    .getContent();
+            List<Alert> alerts = alertRepository.findByAcknowledgedOrderByTriggeredAtDesc(false)
+                    .stream()
+                    .filter(a -> a.getService().getId().equals(service.getId()))
+                    .collect(Collectors.toList());
+            report.setAiInsight(ollamaClient.analyze(service, checks, alerts));
+            report.setAiAvailable(true);
+        } catch (Exception e) {
+            report.setAiInsight("AI analysis unavailable: " + e.getMessage());
+        }
     }
 
     private DiagnosticReport analyzeService(Service service) {
@@ -139,16 +158,6 @@ public class DiagnosticService {
                         .suggestedAction("Acknowledge the alert and investigate the root cause")
                         .build()));
 
-        String aiInsight = null;
-        boolean aiAvailable = ollamaClient.isAvailable();
-        if (aiAvailable) {
-            try {
-                aiInsight = ollamaClient.analyze(service, checks, activeAlerts);
-            } catch (Exception e) {
-                aiInsight = "AI analysis unavailable: " + e.getMessage();
-            }
-        }
-
         return DiagnosticReport.builder()
                 .serviceId(service.getId().toString())
                 .serviceName(service.getName())
@@ -167,8 +176,7 @@ public class DiagnosticService {
                 .anomalyScore(anomalyScore)
                 .activeAlerts(activeAlerts.size())
                 .issues(issues)
-                .aiInsight(aiInsight)
-                .aiAvailable(aiAvailable)
+                .aiAvailable(ollamaClient.isAvailable())
                 .build();
     }
 
