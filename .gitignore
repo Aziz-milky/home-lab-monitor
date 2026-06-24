@@ -31,3 +31,9 @@ build/
 
 ### VS Code ###
 .vscode/
+
+# Workspace config
+opencode.jsonc
+HOMELAB_MONITOR.md
+SENTINEL_V2_DESIGN_PROMPT.md
+SENTINEL_V2_PLAN.md

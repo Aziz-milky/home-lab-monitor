@@ -1,0 +1,19 @@
+spring:
+  main:
+    web-application-type: none
+
+logging:
+  level:
+    com.homelab.agent: INFO
+
+sentinel:
+  server:
+    url: http://10.43.145.156:8080/api
+  agent:
+    hostname: arch-milk
+    name: Arch Desktop
+    version: 1.0.0
+    collection-interval-seconds: 30
+    heartbeat-interval-seconds: 10
+    docker-enabled: false
+    state-file: /home/milky/sentinel-state.json
