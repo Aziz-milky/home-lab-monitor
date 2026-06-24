@@ -88,11 +88,17 @@ Add to `application.properties`:
 ```properties
 ollama.enabled=true
 ollama.url=http://localhost:11434
-ollama.model=llama3.2
+ollama.model=phi:2.7b
 ```
 - The `/api/diagnostics/{id}` endpoint includes heuristic analysis (flapping, trend, anomaly, uptime).
 - `POST /api/diagnostics/ai/{id}` sends health context to Ollama and returns natural-language insights.
 - If Ollama is not configured/available, diagnostics return heuristic data with an "AI unavailable" message.
+
+### GPU Note
+- **MX130 (CC 5.0) is too old for CUDA 13+** — Ollama runs on CPU only via `phi:2.7b`.
+- ~12s per inference query — acceptable for occasional manual diagnostics.
+- Systemd user service at `~/.config/systemd/user/ollama.service`.
+- Manage: `systemctl --user {start,stop,restart,status} ollama`.
 
 ## Seed Data
 

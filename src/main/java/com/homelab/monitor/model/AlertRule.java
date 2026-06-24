@@ -12,6 +12,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import java.util.UUID;
 
@@ -29,6 +31,7 @@ public class AlertRule {
 
     @ManyToOne
     @JoinColumn(name = "service_id", nullable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Service service;
 
     @Column(name = "rule_type", nullable = false)

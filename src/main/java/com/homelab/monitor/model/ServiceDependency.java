@@ -11,6 +11,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import java.util.UUID;
 
@@ -28,10 +30,12 @@ public class ServiceDependency {
 
     @ManyToOne
     @JoinColumn(name = "source_service_id", nullable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Service sourceService;
 
     @ManyToOne
     @JoinColumn(name = "target_service_id", nullable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Service targetService;
 
     private String label;

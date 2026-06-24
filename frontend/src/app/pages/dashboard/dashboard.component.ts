@@ -207,8 +207,8 @@ import { ServiceDependency } from '../../models/dependency.model';
               <div class="service-header">
                 <h2>Services</h2>
                 <div class="filter-chips">
-                  <span class="chip chip-active">All</span>
-                  <span class="chip">Down only</span>
+                  <span class="chip" [class.chip-active]="filterMode === 'all'" (click)="filterMode = 'all'">All</span>
+                  <span class="chip" [class.chip-active]="filterMode === 'down'" (click)="filterMode = 'down'">Down only</span>
                 </div>
               </div>
               <div class="service-grid">
@@ -351,6 +351,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   dependencies: ServiceDependency[] = [];
   recentAlerts: any[] = [];
   loading = true;
+  filterMode: 'all' | 'down' = 'all';
   unacknowledgedCount = 0;
   lastSync = 'just now';
   private destroy$ = new Subject<void>();
@@ -472,7 +473,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
   get serviceCards(): any[] {
     const statusColor = (s: string) => s === 'UP' ? '#34d399' : s === 'DOWN' ? '#a855f7' : '#64748b';
     const statusGlow = (s: string) => s === 'UP' ? 'rgba(52,211,153,.12)' : s === 'DOWN' ? 'rgba(168,85,247,.12)' : 'rgba(100,116,139,.12)';
-    return this.entries.map(e => ({
+    const filtered = this.filterMode === 'down'
+      ? this.entries.filter(e => e.status === 'DOWN')
+      : this.entries;
+    return filtered.map(e => ({
       id: e.serviceId,
       name: e.serviceName,
       type: e.serviceType,

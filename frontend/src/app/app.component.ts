@@ -5,7 +5,7 @@ import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatListModule } from '@angular/material/list';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
-import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { ServiceApiService } from './services/service-api.service';
 
 @Component({
@@ -14,7 +14,7 @@ import { ServiceApiService } from './services/service-api.service';
   imports: [
     RouterOutlet, RouterLink, RouterLinkActive,
     MatToolbarModule, MatSidenavModule, MatListModule,
-    MatIconModule, MatButtonModule
+    MatIconModule, MatButtonModule, MatSnackBarModule
   ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css'

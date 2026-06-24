@@ -4,7 +4,7 @@ import { RouterLink } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { Subject, takeUntil } from 'rxjs';
+import { Subject, takeUntil, catchError, of } from 'rxjs';
 import { DiagnosticApiService } from '../../services/diagnostic-api.service';
 import { DiagnosticReport } from '../../models/diagnostic.model';
 
@@ -66,8 +66,19 @@ import { DiagnosticReport } from '../../models/diagnostic.model';
 
               @if (r.aiInsight) {
                 <div class="ai-insight">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M13 3h-2v10h2z"/><path d="M13 17h-2v4h2z"/></svg>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2a4 4 0 0 1 4 4c0 2-2 4-4 6-2-2-4-4-4-6a4 4 0 0 1 4-4z"/><path d="M12 18v4"/><path d="M8 22h8"/></svg>
                   <span>{{ r.aiInsight }}</span>
+                </div>
+              } @else if (r.aiAvailable && !aiLoading[r.serviceId]) {
+                <div class="ai-insight disabled">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2a4 4 0 0 1 4 4c0 2-2 4-4 6-2-2-4-4-4-6a4 4 0 0 1 4-4z"/><path d="M12 18v4"/><path d="M8 22h8"/></svg>
+                  <span class="ai-placeholder">AI insights available</span>
+                  <button mat-stroked-button class="ai-load-btn" (click)="loadAi(r.serviceId)">Load</button>
+                </div>
+              } @else if (aiLoading[r.serviceId]) {
+                <div class="ai-insight disabled">
+                  <mat-spinner diameter="14" />
+                  <span>Loading AI insight...</span>
                 </div>
               }
             </mat-card>
@@ -121,7 +132,9 @@ import { DiagnosticReport } from '../../models/diagnostic.model';
     .ai-insight { display: flex; align-items: flex-start; gap: 8px; font-size: 12px; color: var(--text-secondary); padding: 10px 12px; background: rgba(168,85,247,.06); border-radius: 8px; }
     .ai-insight svg { flex: none; margin-top: 1px; opacity: .6; }
     .ai-insight.loading { opacity: .5; }
-    .ai-insight.disabled { background: transparent; border: 1px dashed var(--border-color); }
+    .ai-insight.disabled { align-items: center; background: transparent; border: 1px dashed var(--border-color); }
+    .ai-placeholder { flex: 1; color: var(--text-muted); }
+    .ai-load-btn { font-size: 11px; line-height: 26px; min-width: 0; padding: 0 10px; }
     .empty-state { text-align: center; padding: 48px 24px; color: var(--text-muted); }
     .empty-state p { font-size: 14px; }
     mat-spinner { margin: 40px auto; }
@@ -130,6 +143,7 @@ import { DiagnosticReport } from '../../models/diagnostic.model';
 export class DiagnosticsComponent implements OnInit {
   reports: DiagnosticReport[] = [];
   loading = true;
+  aiLoading: Record<string, boolean> = {};
   private destroy$ = new Subject<void>();
 
   get avgScore(): number {
@@ -147,6 +161,17 @@ export class DiagnosticsComponent implements OnInit {
     this.diagnosticApi.getAll().pipe(takeUntil(this.destroy$)).subscribe({
       next: (data) => { this.reports = data; this.loading = false; },
       error: () => this.loading = false
+    });
+  }
+
+  loadAi(serviceId: string): void {
+    this.aiLoading[serviceId] = true;
+    this.diagnosticApi.getAiInsight(serviceId).pipe(
+      catchError(() => of('AI analysis unavailable'))
+    ).subscribe(insight => {
+      const report = this.reports.find(r => r.serviceId === serviceId);
+      if (report) report.aiInsight = insight;
+      this.aiLoading[serviceId] = false;
     });
   }
 

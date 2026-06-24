@@ -18,6 +18,6 @@ export class DiagnosticApiService {
   }
 
   getAiInsight(serviceId: string): Observable<string> {
-    return this.http.post<string>(`${this.base}/ai/${serviceId}`, {});
+    return this.http.post(`${this.base}/ai/${serviceId}`, {}, { responseType: 'text' });
   }
 }
