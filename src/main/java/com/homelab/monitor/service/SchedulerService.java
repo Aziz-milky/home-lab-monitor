@@ -28,6 +28,8 @@ public class SchedulerService {
     private final AlertRuleRepository alertRuleRepository;
     private final AlertRepository alertRepository;
     private final RestTemplate restTemplate;
+    private final AlertRuleEvaluatorService alertRuleEvaluatorService;
+    private final DataRetentionService dataRetentionService;
 
     @Scheduled(fixedDelay = 30000)
     public void performHealthChecks() {
@@ -67,6 +69,12 @@ public class SchedulerService {
             healthCheckRepository.save(check);
             evaluateRules(service, check);
         }
+        alertRuleEvaluatorService.evaluateRules();
+    }
+
+    @Scheduled(cron = "0 0 * * * *")
+    public void purgeOldData() {
+        dataRetentionService.purgeOldData();
     }
 
     private void evaluateRules(Service service, HealthCheck check) {

@@ -86,4 +86,9 @@ public class Host {
     @Column(nullable = false)
     @Builder.Default
     private boolean active = true;
+
+    @Column(name = "is_demo")
+    @Builder.Default
+    private Boolean demo = false;
+
 }

@@ -1,8 +1,11 @@
 package com.homelab.monitor.service;
 
+import com.homelab.monitor.model.AgentStatus;
 import com.homelab.monitor.model.Alert;
 import com.homelab.monitor.model.AlertRule;
 import com.homelab.monitor.model.HealthCheck;
+import com.homelab.monitor.model.Host;
+import com.homelab.monitor.model.HostType;
 import com.homelab.monitor.model.Service;
 import com.homelab.monitor.model.ServiceDependency;
 import com.homelab.monitor.model.ServiceType;
@@ -10,6 +13,7 @@ import com.homelab.monitor.model.Severity;
 import com.homelab.monitor.repository.AlertRepository;
 import com.homelab.monitor.repository.AlertRuleRepository;
 import com.homelab.monitor.repository.HealthCheckRepository;
+import com.homelab.monitor.repository.HostRepository;
 import com.homelab.monitor.repository.ServiceDependencyRepository;
 import com.homelab.monitor.repository.ServiceRepository;
 import jakarta.annotation.PostConstruct;
@@ -21,12 +25,14 @@ import org.springframework.stereotype.Component;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Random;
+import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
 @Slf4j
 public class SeedDataService {
 
+    private final HostRepository hostRepository;
     private final ServiceRepository serviceRepository;
     private final HealthCheckRepository healthCheckRepository;
     private final AlertRuleRepository alertRuleRepository;
@@ -41,8 +47,12 @@ public class SeedDataService {
     @PostConstruct
     void seed() {
         if (!seedEnabled) return;
+
+        // Seed v2 Host entities regardless (runs once — checks host count)
+        seedHosts();
+
         if (serviceRepository.count() > 0) {
-            log.info("Seed skipped — services already exist");
+            log.info("Service seed skipped — services already exist");
             return;
         }
 
@@ -72,6 +82,37 @@ public class SeedDataService {
 
         log.info("Seeded {} services, ~{} health checks, {} alert rules, {} alerts, {} dependencies",
                 services.size(), services.size() * 100, 4, 2, 4);
+    }
+
+    private void seedHosts() {
+        if (hostRepository.count() > 0) {
+            log.info("Host seed skipped — hosts already exist");
+            return;
+        }
+        var now = LocalDateTime.now();
+        hostRepository.saveAll(List.of(
+                Host.builder().name("Gateway").agentId(UUID.randomUUID()).hostname("gateway")
+                        .os("Debian 13").arch("x86_64").kernelVersion("6.12.0-amd64")
+                        .hostType(HostType.LINUX_SERVER).ipAddress("10.43.145.1")
+                        .agentStatus(AgentStatus.CONNECTED).lastSeenAt(now).agentVersion("1.0.0")
+                        .active(true).demo(true).createdAt(now).build(),
+                Host.builder().name("Node-01").agentId(UUID.randomUUID()).hostname("node-01")
+                        .os("Ubuntu 24.04").arch("x86_64").kernelVersion("6.8.0-generic")
+                        .hostType(HostType.DOCKER_HOST).ipAddress("10.43.145.10")
+                        .agentStatus(AgentStatus.CONNECTED).lastSeenAt(now).agentVersion("1.0.0")
+                        .active(true).demo(true).createdAt(now).build(),
+                Host.builder().name("Node-02").agentId(UUID.randomUUID()).hostname("node-02")
+                        .os("Debian 12").arch("x86_64").kernelVersion("6.1.0-amd64")
+                        .hostType(HostType.LINUX_SERVER).ipAddress("10.43.145.11")
+                        .agentStatus(AgentStatus.STALE).lastSeenAt(now.minusMinutes(5)).agentVersion("1.0.0")
+                        .active(true).demo(true).createdAt(now).build(),
+                Host.builder().name("Storage-01").agentId(UUID.randomUUID()).hostname("storage-01")
+                        .os("TrueNAS Scale").arch("x86_64").kernelVersion("6.6.0-truenas")
+                        .hostType(HostType.TRUENAS).ipAddress("10.43.145.20")
+                        .agentStatus(AgentStatus.CONNECTED).lastSeenAt(now).agentVersion("1.0.0")
+                        .active(true).demo(true).createdAt(now).build()
+        ));
+        log.info("Seeded 4 demo hosts (active=true) — shows on dashboard until real agents connect");
     }
 
     private Service createService(String name, String host, int port, ServiceType type, String url) {
@@ -136,7 +177,7 @@ public class SeedDataService {
 
     private void createAlertRule(Service svc, String type, Integer thresholdMs, Integer failureCount) {
         alertRuleRepository.save(AlertRule.builder()
-                .service(svc).ruleType(type).thresholdMs(thresholdMs).failureCount(failureCount).enabled(true)
+                .service(svc).ruleType(type).thresholdMs(thresholdMs).failureCount(failureCount).condition(null).enabled(true)
                 .build());
     }
 

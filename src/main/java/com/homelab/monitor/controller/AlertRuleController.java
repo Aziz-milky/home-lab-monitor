@@ -53,6 +53,7 @@ public class AlertRuleController {
                 .ruleType((String) body.get("ruleType"))
                 .thresholdMs(body.get("thresholdMs") != null ? (Integer) body.get("thresholdMs") : null)
                 .failureCount(body.get("failureCount") != null ? (Integer) body.get("failureCount") : null)
+                .condition((String) body.get("condition"))
                 .enabled(body.get("enabled") != null ? (Boolean) body.get("enabled") : true)
                 .build();
         return ResponseEntity.status(HttpStatus.CREATED).body(alertRuleRepository.save(rule));
@@ -71,6 +72,9 @@ public class AlertRuleController {
         }
         if (body.containsKey("failureCount")) {
             existing.setFailureCount((Integer) body.get("failureCount"));
+        }
+        if (body.containsKey("condition")) {
+            existing.setCondition((String) body.get("condition"));
         }
         if (body.containsKey("enabled")) {
             existing.setEnabled((Boolean) body.get("enabled"));

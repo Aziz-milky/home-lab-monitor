@@ -27,7 +27,7 @@ public class DockerMetricsCollector {
         try {
             ProcessBuilder pb = new ProcessBuilder(
                     "docker", "ps", "--all",
-                    "--format", "{{.ID}}\t{{.Names}}\t{{.Image}}\t{{.Status}}\t{{.RestartCount}}");
+                    "--format", "{{.ID}}\t{{.Names}}\t{{.Image}}\t{{.Status}}");
             pb.redirectErrorStream(true);
             Process p = pb.start();
             String output;
@@ -44,14 +44,13 @@ public class DockerMetricsCollector {
             for (String line : output.split("\n")) {
                 line = line.trim();
                 if (line.isEmpty()) continue;
-                String[] parts = line.split("\t", 5);
-                if (parts.length < 5) continue;
+                String[] parts = line.split("\t", 4);
+                if (parts.length < 4) continue;
 
                 String id = parts[0];
                 String name = parts[1];
                 String image = parts[2];
                 String status = parts[3];
-                String restartCount = parts[4];
 
                 String state = parseState(status);
 
@@ -60,7 +59,7 @@ public class DockerMetricsCollector {
                 entry.put("containerName", name);
                 entry.put("imageName", image);
                 entry.put("status", state);
-                entry.put("restartCount", parseInt(restartCount, 0));
+                entry.put("restartCount", 0);
 
                 if ("RUNNING".equals(state)) {
                     getContainerStats(name, entry);

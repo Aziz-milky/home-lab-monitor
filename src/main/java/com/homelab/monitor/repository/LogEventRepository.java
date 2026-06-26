@@ -2,9 +2,11 @@ package com.homelab.monitor.repository;
 
 import com.homelab.monitor.model.LogEvent;
 import com.homelab.monitor.model.LogLevel;
+import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
@@ -28,5 +30,7 @@ public interface LogEventRepository extends JpaRepository<LogEvent, UUID> {
     Page<LogEvent> findByHostIdAndLevelAndTimestampBetweenOrderByTimestampDesc(
             UUID hostId, LogLevel level, LocalDateTime from, LocalDateTime to, Pageable pageable);
 
+    @Modifying
+    @Transactional
     void deleteByTimestampBefore(LocalDateTime cutoff);
 }

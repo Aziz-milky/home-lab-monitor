@@ -101,8 +101,16 @@ public class HostController {
     }
 
     @GetMapping("/{hostId}/disks")
-    public ResponseEntity<List<DiskSample>> getDisks(@PathVariable UUID hostId) {
+    public ResponseEntity<List<DiskSample>> getDisks(
+            @PathVariable UUID hostId,
+            @RequestParam(required = false) LocalDateTime from,
+            @RequestParam(required = false) LocalDateTime to) {
         findHost(hostId);
+        if (from != null && to != null) {
+            return ResponseEntity.ok(
+                    diskSampleRepository.findByHostIdAndCollectedAtBetweenOrderByCollectedAtAsc(
+                            hostId, from, to, PageRequest.of(0, 500)).getContent());
+        }
         return ResponseEntity.ok(
                 diskSampleRepository.findTop5ByHostIdOrderByCollectedAtDesc(hostId));
     }

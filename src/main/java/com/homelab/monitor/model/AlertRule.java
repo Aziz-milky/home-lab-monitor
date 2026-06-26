@@ -45,4 +45,7 @@ public class AlertRule {
 
     @Column(nullable = false)
     private boolean enabled;
+
+    @Column(name = "condition_expr")
+    private String condition;
 }

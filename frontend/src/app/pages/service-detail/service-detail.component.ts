@@ -4,7 +4,6 @@ import { NgFor, NgIf, DatePipe } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -27,7 +26,7 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
   standalone: true,
   imports: [
     NgFor, NgIf, DatePipe, RouterLink,
-    MatCardModule, MatTableModule, MatButtonModule, MatIconModule, MatTooltipModule,
+    MatCardModule, MatTableModule, MatButtonModule, MatTooltipModule,
     MatProgressSpinnerModule, MatDialogModule,
     StatusBadgeComponent
   ],
@@ -127,7 +126,7 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
             <th mat-header-cell *matHeaderCellDef></th>
             <td mat-cell *matCellDef="let r">
               <button mat-icon-button (click)="deleteRule(r)" matTooltip="Delete">
-                <mat-icon>delete</mat-icon>
+                <span class="mi">delete</span>
               </button>
             </td>
           </ng-container>
